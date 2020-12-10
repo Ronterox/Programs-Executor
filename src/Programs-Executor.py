@@ -66,16 +66,15 @@ class ProgramExecutor:
         def my_popup(e):
             contextmenu.tk_popup(e.x_root, e.y_root)
 
-        def deleteLabel():
+        def deleteLabel(appName):
             self.applications = [application for application in self.applications
-                                 if os.path.basename(application).strip() != label['text'].strip().lower()]
+                                 if os.path.basename(application).strip().lower() != appName.strip().lower()]
             self.updateLabels()
 
         for app in self.applications:
             label = ttk.Label(self.frame_apps, text=os.path.basename(app).upper(), style='TButton')
-
             contextmenu = tk.Menu(label, tearoff=False)
-            contextmenu.add_command(label='Delete', command=deleteLabel)
+            contextmenu.add_command(label='Delete', command=lambda: deleteLabel(label['text']))
             contextmenu.add_separator()
             contextmenu.add_command(label='Exit', command=self.root.quit)
 
@@ -84,7 +83,7 @@ class ProgramExecutor:
 
     def runApps(self):
         for app in self.applications:
-            os.startfile(app.replace("\n", " "))
+            os.startfile(app.replace("\n", ""))
 
     def start(self):
         if os.path.isfile('saved_apps.txt'):  # before showing the GUI we check for a saved file
