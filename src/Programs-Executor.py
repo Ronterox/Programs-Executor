@@ -1,16 +1,22 @@
 import tkinter as tk
 from tkinter import filedialog, ttk
 import os
+import webbrowser
+
+APP_TITLE = "PROGRAMS EXECUTOR"
+
+
+# TODO: Update url values to labels, and save them. Also add option to load saved_config
 
 
 class ProgramExecutor:
     applications = []
-    APP_TITLE = "PROGRAMS EXECUTOR"
+    urls = []
 
     def __init__(self):
         self.applications = []
         self.root = tk.Tk()
-        self.root.wm_title(self.APP_TITLE)
+        self.root.wm_title(APP_TITLE)
         self.root.configure(bg="#00BFA5")
         self.root.wm_maxsize(500, 400)
 
@@ -45,6 +51,25 @@ class ProgramExecutor:
 
         ttk.Button(self.frame_buttons, text='Run Applications', command=self.runApps,
                    style='Action.TButton').pack(side="right")
+
+        ttk.Button(self.frame_buttons, text='Load URL', command=self.popup,
+                   style='Action.TButton').pack(side="left")
+
+    def popup(self):
+        window = PopupWindow(self.root)
+        self.root.wait_window(window.top)
+        self.addUrl(window.getValue())
+
+    def runUrls(self):
+        for url in self.urls:
+            webbrowser.open(url)
+
+    def addUrl(self, url):
+        if url:
+            self.urls.append(url.strip())
+
+    def updateUrls(self):  # TODO: ---------------------------------------------------------
+        pass
 
     def saveApps(self):
         with open('saved_apps.txt', 'w') as file:
@@ -94,6 +119,26 @@ class ProgramExecutor:
         self.root.mainloop()
 
         self.saveApps()
+
+
+class PopupWindow(object):
+    value = None
+
+    def __init__(self, master):
+        top = self.top = tk.Toplevel(master)
+        top.wm_maxsize(500, 100)
+        top.title('Load URL - ' + APP_TITLE)
+        tk.Label(top, text='Write an URL', padx=15, pady=15).pack()
+        self.entry = tk.Entry(top, width=80)
+        self.entry.pack()
+        tk.Button(top, text='Add', command=self.cleanup).pack()
+
+    def cleanup(self):
+        self.value = self.entry.get()
+        self.top.destroy()
+
+    def getValue(self):
+        return self.value
 
 
 program_executor = ProgramExecutor()
