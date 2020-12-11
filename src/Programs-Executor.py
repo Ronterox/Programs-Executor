@@ -6,9 +6,6 @@ import webbrowser
 APP_TITLE = "PROGRAMS EXECUTOR"
 
 
-# TODO: Update url values to labels, and save them. Also add option to load saved_config
-
-
 class ProgramExecutor:
     applications = []
     urls = []
@@ -52,13 +49,14 @@ class ProgramExecutor:
         ttk.Button(self.frame_buttons, text='Run Applications', command=self.runApps,
                    style='Action.TButton').pack(side="right")
 
-        ttk.Button(self.frame_buttons, text='Load URL', command=self.popup,
+        ttk.Button(self.frame_buttons, text='Load URL', command=self.popupUrl,
                    style='Action.TButton').pack(side="left")
 
-    def popup(self):
+    def popupUrl(self):
         window = PopupWindow(self.root)
         self.root.wait_window(window.top)
         self.addUrl(window.getValue())
+        self.updateLabels()
 
     def runUrls(self):
         for url in self.urls:
@@ -68,13 +66,15 @@ class ProgramExecutor:
         if url:
             self.urls.append(url.strip())
 
-    def updateUrls(self):  # TODO: ---------------------------------------------------------
-        pass
-
     def saveApps(self):
         with open('saved_apps.txt', 'w') as file:
             for app in self.applications:
                 file.write(app + '\n')
+
+    def saveUrls(self):
+        with open('saved_urls.txt', 'w') as file:
+            for url in self.urls:
+                file.write(url + '\n')
 
     def addApp(self):
         filename = filedialog.askopenfilename(initialdir='/', title='Select an Executable!',
@@ -106,19 +106,34 @@ class ProgramExecutor:
             label.bind('<Button-3>', my_popup)
             label.pack()
 
+        for url in self.urls:
+            label = ttk.Label(self.frame_apps, text=os.path.basename(url).upper(), style='TButton')
+            contextmenu = tk.Menu(label, tearoff=False)
+            contextmenu.add_command(label='Delete', command=lambda: deleteLabel(label['text']))
+            contextmenu.add_separator()
+            contextmenu.add_command(label='Exit', command=self.root.quit)
+
+            label.bind('<Button-3>', my_popup)
+            label.pack()
+
     def runApps(self):
         for app in self.applications:
             os.startfile(app.replace("\n", ""))
+        self.runUrls()
 
     def start(self):
-        if os.path.isfile('saved_apps.txt'):  # before showing the GUI we check for a saved file
+        if os.path.isfile('saved_apps.txt'):
             with open('saved_apps.txt', 'r') as savedFile:
                 self.applications = [line for line in savedFile if line.strip()]
-                self.updateLabels()
+        if os.path.isfile('saved_urls.txt'):
+            with open('saved_urls.txt', 'r') as savedFile:
+                self.urls = [line for line in savedFile if line.strip()]
 
+        self.updateLabels()
         self.root.mainloop()
 
         self.saveApps()
+        self.saveUrls()
 
 
 class PopupWindow(object):
